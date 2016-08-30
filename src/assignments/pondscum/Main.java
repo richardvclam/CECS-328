@@ -14,13 +14,13 @@ import java.util.Scanner;
 public class Main {
 
 	public static void main(String[] args) throws FileNotFoundException {
-		String[][] inputData = readFile("C:/Users/Richard/workspace/CECS 328/src/assignments/pondscum/ponds.txt");
+		String[][] inputData = readFile("/Users/rvclam/Documents/workspace/CECS-328/src/assignments/pondscum/sample.txt");
 		BigDecimal[] output;
 		String[][] outputPond = Arrays.copyOf(inputData, inputData.length);
 		int numPond = 0;
 		double[][] matrix;
 		double[] constants;
-		HashMap<Integer, int[]> ponds = new HashMap<>();
+		HashMap<Integer, int[]> ponds = new HashMap<Integer, int[]>();
 		
 		System.out.println("Starting Input");
 		for (int i = 0; i < inputData.length; i++) {
