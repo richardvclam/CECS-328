@@ -1,39 +1,42 @@
 package assignments.pondscum;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 public class BigFraction {
 	
-	private int num;
-	private int denom;
+	private BigInteger num;
+	private BigInteger denom;
 	
 	public BigFraction(BigDecimal decimal) {
-		String str = String.valueOf(decimal);
-		int decDigits = str.length() - 1 - str.indexOf('.');
+		String str = decimal.stripTrailingZeros().toPlainString();
+		long decDigits = (long)str.length() - (long)str.indexOf('.') - 1;
 		
-		this.denom = 1;
+		//System.out.println("dec digits: " + decDigits);
+		
+		denom = new BigInteger("1");
 		for (int i = 0; i < decDigits; i++) {
-			decimal.multiply(new BigDecimal(10));
-			denom *= 10;
+			decimal = decimal.multiply(new BigDecimal("10"));
+			denom = denom.multiply(new BigInteger("10"));
 		}
 		
-		this.num = decimal.ROUND_UP;
+		num = decimal.toBigIntegerExact();
 		
 		reduce();
 	}
 	
 	public void reduce() {
-		int gcd = gcd(num, denom);
+		BigInteger gcd = gcd(num, denom);
 		
-		num /= gcd;
-		denom /= gcd;
+		num = num.divide(gcd);
+		denom = denom.divide(gcd);
 	}
 	
-	public int gcd(int num, int denom) {
-		if (num == 0 || denom == 0) {
-			return num + denom;
+	public BigInteger gcd(BigInteger num, BigInteger denom) {
+		if (num.equals(BigInteger.ZERO) || denom.equals(BigInteger.ZERO)) {
+			return num.add(denom);
 		}
-		return gcd(denom, num % denom);
+		return gcd(denom, num.mod(denom));
 	}
 	
 	public String toString() {
@@ -41,7 +44,11 @@ public class BigFraction {
 	}
 	
 	public static void main(String[] args) {
-		System.out.println(new BigFraction(new BigDecimal(1/2)));
+		System.out.println((double) 177603/377);
+		double d = (double) 177603/377;
+		System.out.println(new BigFraction(new BigDecimal("" + d)));
+		System.out.println(new BigFraction(new BigDecimal("253.1964285714285714285714285714")));
+		
 	}
 
 }

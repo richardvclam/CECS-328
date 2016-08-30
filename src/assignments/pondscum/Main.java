@@ -2,6 +2,9 @@ package assignments.pondscum;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,8 +14,8 @@ import java.util.Scanner;
 public class Main {
 
 	public static void main(String[] args) throws FileNotFoundException {
-		String[][] inputData = readFile("C:/Users/Richard/workspace/CECS 328/src/assignments/pondscum/samp.txt");
-		double[] output;
+		String[][] inputData = readFile("C:/Users/Richard/workspace/CECS 328/src/assignments/pondscum/ponds.txt");
+		BigDecimal[] output;
 		String[][] outputPond = Arrays.copyOf(inputData, inputData.length);
 		int numPond = 0;
 		double[][] matrix;
@@ -129,13 +132,13 @@ public class Main {
 		}
 		System.out.println("\n");
 		
-		output = lsolve(matrix, constants);
+		output = gaussian(matrix, constants);
 		int currentOutput = 0;
 		
 		for (int i = 0; i < outputPond.length; i++) {
 			for (int j = 0; j < outputPond[i].length; j++) {
 				if (outputPond[i][j].charAt(0) == '!') {
-					outputPond[i][j] = String.valueOf(output[currentOutput]);
+					outputPond[i][j] = String.valueOf(new BigFraction(output[currentOutput]));
 					currentOutput++;
 				}
 			}
@@ -185,99 +188,64 @@ public class Main {
 		}
 	}
 	
-	private static double calculateHeight(int row, int col, String[][] data) {
-		String topString = data[row - 1][col];
-		String leftString = data[row][col - 1];
-		String rightString = data[row][col + 1];
-		String bottomString = data[row + 1][col];
-		
-		double top = 0, left = 0, right = 0, bottom = 0;
-		
-		if (topString.charAt(0) != '!') {
-			top = Double.parseDouble(topString);
-		}
-		
-		if (leftString.charAt(0) != '!') {
-			left = Double.parseDouble(leftString);
-		}
-		
-		if (rightString.charAt(0) != '!') {
-			right = Double.parseDouble(rightString);
-		}
-		
-		if (bottomString.charAt(0) != '!') {
-			bottom = Double.parseDouble(bottomString);
-		}
-		
-		
-		if (topString.charAt(0) == '!') {
-			top = (left + right + bottom + 4 * (Double.parseDouble(data[row-1][col]) + Double.parseDouble(data[col-1][row-1]) + Double.parseDouble(data[col+1][row-1]))) / 15;
-		}
-		
-		if (leftString.charAt(0) == '!') {
-			//left = (top + right + bottom + 4 * (data[row-1][col-1].charAt(0) == '!' ? calculateHeight(row - 1, col - 1, data) : Double.parseDouble(data[row-1][col-1]) + 
-			//		data[row][col-2].charAt(0) == '!' ? calculateHeight(row, col - 2, data) : Double.parseDouble(data[row][col-2]) + 
-			//	    data[row+1][col-1].charAt(0) == '!' ? calculateHeight(row+1, col-1, data) : Double.parseDouble(data[row+1][col-1]))) / 15;
-			left = (top + right + bottom + 4 * (Double.parseDouble(data[row-1][col-1]) + Double.parseDouble(data[row][col-2]) + Double.parseDouble(data[row+1][col-1]))) / 15;	    
-		}
-		
-		if (rightString.charAt(0) == '!') {
-			right = (top + left + bottom + 4 * ((data[row-1][col+1].charAt(0) == '!' ? calculateHeight(row, col+1, data) : Double.parseDouble(data[row-1][col+1])) + 
-					(data[row][col+2].charAt(0) == '!' ? calculateHeight(row, col+1, data) : Double.parseDouble(data[row][col+2])) + 
-					(data[row+1][col+1].charAt(0) == '!' ? calculateHeight(row, col+1, data) : Double.parseDouble(data[row+1][col+1])))) / 15;
-		}
-		
-		if (bottomString.charAt(0) == '!') {
-			bottom = (top + left + right + 4 * ((data[row+1][col-1].charAt(0) == '!' ? calculateHeight(row+1, col, data) : Double.parseDouble(data[row+1][col-1])) + 
-					(data[row+1][col+1].charAt(0) == '!' ? calculateHeight(row+1, col, data) : Double.parseDouble(data[row+1][col+1])) + 
-					(data[row+2][col].charAt(0) == '!' ? calculateHeight(row+1, col, data) : Double.parseDouble(data[row+2][col])))) / 15;
-		}
-		
-		return (top + left + right + bottom) / 4;
-	}
-	
 	private static final double EPSILON = 1e-10;
 
     // Gaussian elimination with partial pivoting
-    public static double[] lsolve(double[][] A, double[] b) {
-        int N  = b.length;
+    public static BigDecimal[] gaussian(double[][] A, double[] b) {
+        int N = b.length;
+        
+        // Create a BigDecimal array for array A and b.
+        BigDecimal[][] bd_AArray = new BigDecimal[N][N];
+        BigDecimal[] bd_bArray = new BigDecimal[N]; 
+        
+        // Copy double arrays over to BigDecimal
+        for (int i = 0; i < N; i++) {
+        	bd_bArray[i] = new BigDecimal("" + b[i]);
+        }
+        for (int i = 0; i < N; i++) {
+        	for (int j = 0; j < N; j++) {
+        		bd_AArray[i][j] = new BigDecimal("" + A[i][j]);
+        	}
+        }
 
         for (int p = 0; p < N; p++) {
 
-            // find pivot row and swap
+            // Find pivot row and swap
             int max = p;
             for (int i = p + 1; i < N; i++) {
-                if (Math.abs(A[i][p]) > Math.abs(A[max][p])) {
-                    max = i;
-                }
+            	if (bd_AArray[i][p].abs().compareTo(bd_AArray[max][p].abs()) == 1) {
+            		max = i;
+            	}
             }
-            double[] temp = A[p]; A[p] = A[max]; A[max] = temp;
-            double   t    = b[p]; b[p] = b[max]; b[max] = t;
+            
+            BigDecimal[] temp = bd_AArray[p]; bd_AArray[p] = bd_AArray[max]; bd_AArray[max] = temp;
+            BigDecimal   t    = bd_bArray[p]; bd_bArray[p] = bd_bArray[max]; bd_bArray[max] = t;
 
-            // singular or nearly singular
-            if (Math.abs(A[p][p]) <= EPSILON) {
-                throw new RuntimeException("Matrix is singular or nearly singular");
+            if (bd_AArray[p][p].abs().compareTo(BigDecimal.ZERO) == 2 || bd_AArray[p][p].abs().equals(BigDecimal.ZERO)) {
+                throw new RuntimeException("Matrix is singular");
             }
 
-            // pivot within A and b
+            // Pivot between A and b
             for (int i = p + 1; i < N; i++) {
-                double alpha = A[i][p] / A[p][p];
-                b[i] -= alpha * b[p];
+            	//MathContext mc = new MathContext(2, RoundingMode.HALF_UP);
+                BigDecimal alpha = bd_AArray[i][p].divide(bd_AArray[p][p], 100, RoundingMode.HALF_UP);
+                bd_bArray[i] = bd_bArray[i].subtract(alpha.multiply(bd_bArray[p]));
                 for (int j = p; j < N; j++) {
-                    A[i][j] -= alpha * A[p][j];
+                	bd_AArray[i][j] = bd_AArray[i][j].subtract(alpha.multiply(bd_AArray[p][j]));
                 }
             }
         }
 
-        // back substitution
-        double[] x = new double[N];
+        // Back substitution
+        BigDecimal[] x = new BigDecimal[N];
         for (int i = N - 1; i >= 0; i--) {
-            double sum = 0.0;
-            for (int j = i + 1; j < N; j++) {
-                sum += A[i][j] * x[j];
-            }
-            x[i] = (b[i] - sum) / A[i][i];
+        	BigDecimal sum = BigDecimal.ZERO;
+        	for (int j = i + 1; j < N; j++) {
+        		sum = sum.add(bd_AArray[i][j].multiply(x[j]));
+        	}
+        	x[i] = (bd_bArray[i].subtract(sum)).divide(bd_AArray[i][i], 100, RoundingMode.HALF_UP);
         }
+
         return x;
     }
 
