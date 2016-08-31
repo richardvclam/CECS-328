@@ -16,8 +16,8 @@ import java.util.Scanner;
 public class Main {
 
 	public static void main(String[] args) throws FileNotFoundException {
-		//String[][] inputData = readFile("/Users/rvclam/Documents/workspace/CECS-328/src/assignments/pondscum/sample.txt"); 
-		String[][] inputData = readFile("C:/Users/Richard/workspace/CECS 328/src/assignments/pondscum/ponds.txt");
+		String[][] inputData = readFile("/Users/rvclam/Documents/workspace/CECS-328/src/assignments/pondscum/ponds.txt"); 
+		//String[][] inputData = readFile("C:/Users/Richard/workspace/CECS 328/src/assignments/pondscum/ponds.txt");
 		BigFraction[] output;
 		String[][] outputPond = Arrays.copyOf(inputData, inputData.length);
 		int numPond = 0;
@@ -135,8 +135,8 @@ public class Main {
 		}
 		System.out.println("\n");
 		
-		output = gaussian(matrix, constants);
-		//output = Matrix.cramers(matrix, constants);
+		//output = gaussian(matrix, constants);
+		output = Matrix.cramers(matrix, constants);
 		int currentOutput = 0;
 		
 		for (int i = 0; i < outputPond.length; i++) {

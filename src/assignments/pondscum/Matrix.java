@@ -16,22 +16,24 @@ public class Matrix {
 		long[][] E = {{5,-2,1}, {0,3,-1}, {2,0,7}}; // 103
 		long[][] F = {{4,-1,1}, {4,5,3}, {-2,0,0}}; // 16
 		long[][] G = {{6,1,1}, {4,-2,5}, {2,8,7}}; // -306
-		long[][] four = {{2,5,3,5}, {4,6,6,3}, {11,3,2,-2}, {4,-7,9,3}}; //2960
-		long[][] H = {{1,5,4,2}, {-2,3,6,4}, {5,1,0,-1}, {2,3,-4,0}};
-		long[][] five = {{2,5,3,5,6}, {4,6,6,3,2}, {11,3,2,-2,1}, {4,-7,9,3,0}, {22,6,2,5,9}};
+		long[][] four = {{2,5,3,5}, {4,6,6,3}, {11,3,2,-2}, {4,-7,9,3}}; // 2960
+		long[][] H = {{1,5,4,2}, {-2,3,6,4}, {5,1,0,-1}, {2,3,-4,0}}; // 242
+		long[][] five = {{2,5,3,5,6}, {4,6,6,3,2}, {11,3,2,-2,1}, {4,-7,9,3,0}, {22,6,2,5,9}}; // -21560
 		long[][] B = { {4,6} , {3,8} }; // 14
 		
-		System.out.println(determinant(four));
+		//System.out.println(determinant(four));
+		//System.out.println(determinantFromUpperTriangular(five));
 		
-		/*
+		
 		BigFraction[] result = cramers(A, c);
 		for (int i = 0; i < result.length; i++) {
 			System.out.println(result[i] + ",");
 		}
-		*/
+		
+		
 	}
 	
-	public static long determinantFromUpperTriangularForm(long[][] matrix) {
+	public static BigFraction determinantFromUpperTriangular(long[][] matrix) {
 		int n = matrix.length;
 		
 		BigFraction[][] result = new BigFraction[n][n];
@@ -42,17 +44,37 @@ public class Matrix {
 			}
 		}
 		
+		BigFraction neg = new BigFraction(BigInteger.ONE);
+		
+		for (int k = 0; k < n; k++) {
+            int max = k;
+            for (int i = k + 1; i < n; i++) {
+            	if (result[i][k].abs().compareTo(result[max][k].abs()) == 1) {
+            		max = i;
+            	}
+            }
+            
+            if (max != k) {
+	            BigFraction[] temp = result[k]; 
+	            result[k] = result[max]; 
+	            result[max] = temp;
+	            neg = neg.multiply(new BigFraction(new BigInteger("-1")));
+            }
+
+            for (int i = k + 1; i < n; i++) {
+                BigFraction f = result[i][k].divide(result[k][k]);
+                for (int j = k; j < n; j++) {
+                	result[i][j] = result[i][j].subtract(f.multiply(result[k][j]));
+                }
+            }
+        }
+		
+		BigFraction det = new BigFraction(BigInteger.ONE);
 		for (int i = 0; i < n; i++) {
-			for (int j = 0; j < i; j++) {
-				if (!result[i][j].equals(0)) {
-					for (int k = 0; k < n; k++) {
-						result[i][k] = result[i][k].subtract(result[j][k]);
-					}
-				}
-			}
+			det = det.multiply(result[i][i]);
 		}
 		
-		return 0;
+		return det.multiply(neg);
 	}
 	
 	
@@ -120,7 +142,10 @@ public class Matrix {
 		int n = constants.length;
 		BigFraction[] result = new BigFraction[n];
 		
-		long D = determinant(matrix);
+		BigFraction D = determinantFromUpperTriangular(matrix);
+		//long det = determinant(matrix);
+		//System.out.println("Det: " + det);
+		//System.out.println("D:" + D);
 		
 		for (int k = 0; k < n; k++) {
 			long[][] temp = new long[n][n];
@@ -130,7 +155,13 @@ public class Matrix {
 				}
 				temp[i][k] = constants[i];
 			}
-			result[k] = new BigFraction(new BigInteger(""+determinant(temp)), new BigInteger(""+D));
+			//result[k] = new BigFraction(new BigInteger(""+determinant(temp)), new BigInteger(""+D));
+			BigFraction t = determinantFromUpperTriangular(temp);
+			result[k] = t.divide(D);
+			//long tt = determinant(temp);
+			//System.out.println("Det[" + k + "] " + tt);
+			//System.out.println("D[" + k + "] " + t);
+			
 		}
 		
 		return result;

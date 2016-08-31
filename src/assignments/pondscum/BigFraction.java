@@ -96,13 +96,18 @@ public class BigFraction {
 		
 		num = num.divide(gcd);
 		denom = denom.divide(gcd);
+		
+		if (num.signum() == -1 && denom.signum() == -1) {
+			num = num.negate();
+			denom = denom.negate();
+		}
 	}
 	
 	public BigInteger gcd(BigInteger num, BigInteger denom) {
 		if (num.equals(BigInteger.ZERO) || denom.equals(BigInteger.ZERO)) {
 			return num.add(denom);
 		}
-		return gcd(denom, num.mod(denom));
+		return gcd(denom.abs(), num.mod(denom.abs()).abs());
 	}
 	
 	public String toString() {
