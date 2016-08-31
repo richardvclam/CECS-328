@@ -20,38 +20,46 @@ public class BigFraction {
 		reduce();
 	}
 	
-	public void add(BigFraction bf) {
+	public BigFraction add(BigFraction bf) {
 		makeDenomEqual(bf);
 		
-		if (denom.equals(bf.denom)) {
-			num = num.add(bf.num);
-		}
+		BigFraction f = new BigFraction(num.add(bf.num), denom);
+		f.reduce();
 		
-		reduce();
+		return f;
 	}
 	
-	public void subtract(BigFraction bf) {
+	public BigFraction subtract(BigFraction bf) {
 		makeDenomEqual(bf);
 		
-		if (denom.equals(bf.denom)) {
-			num = num.subtract(bf.num);
-		}
+		BigFraction f = new BigFraction(num.subtract(bf.num), denom);
+		f.reduce();
 		
-		reduce();
+		return f;
 	}
 	
-	public void multiply(BigFraction bf) {
-		num = num.multiply(bf.num);
-		denom = denom.multiply(bf.denom);
+	public BigFraction multiply(BigFraction bf) {
+		BigFraction f = new BigFraction(num.multiply(bf.num), denom.multiply(bf.denom));
+		f.reduce();
 		
-		reduce();
+		return f;
 	}
 	
-	public void divide(BigFraction bf) {
-		num = num.multiply(bf.denom);
-		denom = denom.multiply(bf.num);
+	public BigFraction divide(BigFraction bf) {
+		BigFraction f = new BigFraction(num.multiply(bf.denom), denom.multiply(bf.num));
+		f.reduce();
 		
-		reduce();
+		return f;
+	}
+	
+	public BigFraction abs() {
+		return new BigFraction(num.abs(), denom);
+	}
+	
+	public int compareTo(BigFraction bf) {
+		makeDenomEqual(bf);
+		
+		return num.compareTo(bf.num);
 	}
 	
 	public void makeDenomEqual(BigFraction bf) {
@@ -112,7 +120,7 @@ public class BigFraction {
 		BigFraction a = new BigFraction(new BigInteger("4"), new BigInteger("3"));
 		BigFraction b = new BigFraction(new BigInteger("5"), new BigInteger("2"));
 		BigFraction c = new BigFraction(new BigInteger("2"));
-		a.divide(c);
+		a = a.subtract(c);
 		
 		System.out.println(a);
 		

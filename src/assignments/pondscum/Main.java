@@ -2,7 +2,9 @@ package assignments.pondscum;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -14,12 +16,13 @@ import java.util.Scanner;
 public class Main {
 
 	public static void main(String[] args) throws FileNotFoundException {
-		String[][] inputData = readFile("/Users/rvclam/Documents/workspace/CECS-328/src/assignments/pondscum/sample.txt");
-		BigDecimal[] output;
+		//String[][] inputData = readFile("/Users/rvclam/Documents/workspace/CECS-328/src/assignments/pondscum/sample.txt"); 
+		String[][] inputData = readFile("C:/Users/Richard/workspace/CECS 328/src/assignments/pondscum/ponds.txt");
+		BigFraction[] output;
 		String[][] outputPond = Arrays.copyOf(inputData, inputData.length);
 		int numPond = 0;
-		double[][] matrix;
-		double[] constants;
+		long[][] matrix;
+		long[] constants;
 		HashMap<Integer, int[]> ponds = new HashMap<Integer, int[]>();
 		
 		System.out.println("Starting Input");
@@ -43,8 +46,8 @@ public class Main {
 			}
 		}
 		
-		matrix = new double[numPond][numPond];
-		constants = new double[numPond];
+		matrix = new long[numPond][numPond];
+		constants = new long[numPond];
 		
 		numPond = 0;
 		
@@ -133,27 +136,35 @@ public class Main {
 		System.out.println("\n");
 		
 		output = gaussian(matrix, constants);
+		//output = Matrix.cramers(matrix, constants);
 		int currentOutput = 0;
 		
 		for (int i = 0; i < outputPond.length; i++) {
 			for (int j = 0; j < outputPond[i].length; j++) {
 				if (outputPond[i][j].charAt(0) == '!') {
-					outputPond[i][j] = String.valueOf(new BigFraction(output[currentOutput]));
+					outputPond[i][j] = String.valueOf(output[currentOutput]);
 					currentOutput++;
 				}
 			}
 		}
+		
+		PrintWriter writer = new PrintWriter("src/assignments/pondscum/heights.txt");
 		
 		System.out.println("Ending Output");
 		for (int i = 0; i < outputPond.length; i++) {
 			for (int j = 0; j < outputPond[i].length; j++) {
 				if (j != 0) {
 					System.out.print(",");
+					writer.print(",");
 				}
 				System.out.print(outputPond[i][j]);	
+				writer.print(outputPond[i][j]);
 			}
 			System.out.println();
+			writer.println();
 		}
+		
+		writer.close();
 		
 	}
 	
@@ -187,66 +198,57 @@ public class Main {
 			return 0;
 		}
 	}
-	
-	private static final double EPSILON = 1e-10;
 
-    // Gaussian elimination with partial pivoting
-    public static BigDecimal[] gaussian(double[][] A, double[] b) {
-        int N = b.length;
+    public static BigFraction[] gaussian(long[][] coefficientMatrix, long[] constants) {
+        int n = constants.length;
         
-        // Create a BigDecimal array for array A and b.
-        BigDecimal[][] bd_AArray = new BigDecimal[N][N];
-        BigDecimal[] bd_bArray = new BigDecimal[N]; 
+        BigFraction[][] coeff = new BigFraction[n][n];
+        BigFraction[] consts = new BigFraction[n]; 
         
-        // Copy double arrays over to BigDecimal
-        for (int i = 0; i < N; i++) {
-        	bd_bArray[i] = new BigDecimal("" + b[i]);
+        for (int i = 0; i < n; i++) {
+        	consts[i] = new BigFraction(new BigInteger("" + constants[i]));
         }
-        for (int i = 0; i < N; i++) {
-        	for (int j = 0; j < N; j++) {
-        		bd_AArray[i][j] = new BigDecimal("" + A[i][j]);
+        for (int i = 0; i < n; i++) {
+        	for (int j = 0; j < n; j++) {
+        		coeff[i][j] = new BigFraction(new BigInteger("" + coefficientMatrix[i][j]));
         	}
         }
 
-        for (int p = 0; p < N; p++) {
-
-            // Find pivot row and swap
-            int max = p;
-            for (int i = p + 1; i < N; i++) {
-            	if (bd_AArray[i][p].abs().compareTo(bd_AArray[max][p].abs()) == 1) {
+        for (int k = 0; k < n; k++) {
+            int max = k;
+            for (int i = k + 1; i < n; i++) {
+            	if (coeff[i][k].abs().compareTo(coeff[max][k].abs()) == 1) {
             		max = i;
             	}
             }
             
-            BigDecimal[] temp = bd_AArray[p]; bd_AArray[p] = bd_AArray[max]; bd_AArray[max] = temp;
-            BigDecimal   t    = bd_bArray[p]; bd_bArray[p] = bd_bArray[max]; bd_bArray[max] = t;
+            BigFraction[] temp = coeff[k]; 
+            coeff[k] = coeff[max]; 
+            coeff[max] = temp;
+            
+            BigFraction t = consts[k]; 
+            consts[k] = consts[max]; 
+            consts[max] = t;
 
-            if (bd_AArray[p][p].abs().compareTo(BigDecimal.ZERO) == 2 || bd_AArray[p][p].abs().equals(BigDecimal.ZERO)) {
-                throw new RuntimeException("Matrix is singular");
-            }
-
-            // Pivot between A and b
-            for (int i = p + 1; i < N; i++) {
-            	//MathContext mc = new MathContext(2, RoundingMode.HALF_UP);
-                BigDecimal alpha = bd_AArray[i][p].divide(bd_AArray[p][p], 100, RoundingMode.HALF_UP);
-                bd_bArray[i] = bd_bArray[i].subtract(alpha.multiply(bd_bArray[p]));
-                for (int j = p; j < N; j++) {
-                	bd_AArray[i][j] = bd_AArray[i][j].subtract(alpha.multiply(bd_AArray[p][j]));
+            for (int i = k + 1; i < n; i++) {
+                BigFraction f = coeff[i][k].divide(coeff[k][k]);
+                consts[i] = consts[i].subtract(f.multiply(consts[k]));
+                for (int j = k; j < n; j++) {
+                	coeff[i][j] = coeff[i][j].subtract(f.multiply(coeff[k][j]));
                 }
             }
         }
 
-        // Back substitution
-        BigDecimal[] x = new BigDecimal[N];
-        for (int i = N - 1; i >= 0; i--) {
-        	BigDecimal sum = BigDecimal.ZERO;
-        	for (int j = i + 1; j < N; j++) {
-        		sum = sum.add(bd_AArray[i][j].multiply(x[j]));
+        BigFraction[] result = new BigFraction[n];
+        for (int i = n - 1; i >= 0; i--) {
+        	BigFraction sum = new BigFraction(BigInteger.ZERO);
+        	for (int j = i + 1; j < n; j++) {
+        		sum = sum.add(coeff[i][j].multiply(result[j]));
         	}
-        	x[i] = (bd_bArray[i].subtract(sum)).divide(bd_AArray[i][i], 100, RoundingMode.HALF_UP);
+        	result[i] = (consts[i].subtract(sum)).divide(coeff[i][i]);
         }
 
-        return x;
+        return result;
     }
 
 }
