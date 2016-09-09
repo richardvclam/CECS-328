@@ -73,7 +73,7 @@ public class Matrix {
 		for (int i = 0; i < n; i++) {
 			det = det.multiply(result[i][i]);
 		}
-		
+
 		return det.multiply(neg);
 	}
 	
@@ -161,7 +161,7 @@ public class Matrix {
 			//long tt = determinant(temp);
 			//System.out.println("Det[" + k + "] " + tt);
 			//System.out.println("D[" + k + "] " + t);
-			
+			System.out.println(k+1 + "/" + n + " Completed");
 		}
 		
 		return result;

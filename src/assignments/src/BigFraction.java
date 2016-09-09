@@ -1,5 +1,3 @@
-package assignments.pondscum;
-
 import java.math.BigInteger;
 
 public class BigFraction {
