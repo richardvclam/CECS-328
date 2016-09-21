@@ -5,19 +5,20 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Scanner;
 
 public class Hotlines {
 	
 	public static void main(String[] args) throws FileNotFoundException {
 		long startTime = System.currentTimeMillis();
-		File file = new File("C:/Users/Richard/workspace/CECS 328/src/assignments/hotlines/edges.txt");
+		File file = new File("src/assignments/hotlines/edges.txt");
 		Scanner in = new Scanner(file);
 		
-		int N, num = 0;
+		int N;
 		HashMap<Integer, ArrayList<Integer>> edges = new HashMap<Integer, ArrayList<Integer>>();
-		ArrayList<ArrayList<Integer>> paths = new ArrayList<ArrayList<Integer>>();
-		ArrayList<Integer> path = new ArrayList<Integer>();
+		LinkedList<LinkedList<Integer>> paths = new LinkedList<LinkedList<Integer>>();
+		LinkedList<Integer> path = new LinkedList<Integer>();
 		path.add(0);
 		
 		N = in.nextInt();
@@ -34,8 +35,7 @@ public class Hotlines {
 				ArrayList<Integer> edge = new ArrayList<Integer>();
 				edge.add(Integer.parseInt(edgeString[1]));
 				edges.put(Integer.parseInt(edgeString[0]), edge);
-			}
-			num++;
+			};
 		}
 		
 		paths = findPath(edges, paths, path, N, 0);
@@ -50,16 +50,22 @@ public class Hotlines {
 			}
 		}
 		
-		System.out.println("Paths: " + paths);
-		System.out.println("Longest path: " + paths.get(largestPathNum));
-		
 		PrintWriter writer = new PrintWriter("src/assignments/hotlines/paths.txt");
 		
-		for (int i = 0; i < paths.get(largestPathNum).size(); i++) {
-			if (i != 0) {
-				writer.print(",");
+		//System.out.println("Paths: " + paths);
+		System.out.println("Number of possible paths: " + paths.size());
+		
+		try {
+			System.out.println("Longest path: " + paths.get(largestPathNum));
+			
+			for (int i = 0; i < paths.get(largestPathNum).size(); i++) {
+				if (i != 0) {
+					writer.print(",");
+				}
+				writer.print(paths.get(largestPathNum).get(i));
 			}
-			writer.print(paths.get(largestPathNum).get(i));
+		} catch (ArrayIndexOutOfBoundsException e) {
+			System.out.println("There aren't any paths.");
 		}
 		
 		writer.close();
@@ -72,19 +78,20 @@ public class Hotlines {
 		System.out.println("\nTotal run time: " + minutes + "m " + seconds + "s " + ms + "ms");
 	}
 	
-	public static ArrayList<ArrayList<Integer>> findPath(HashMap<Integer, ArrayList<Integer>> edges, ArrayList<ArrayList<Integer>> paths, ArrayList<Integer> path, int lastVertex, int currentVertex) {
+	public static LinkedList<LinkedList<Integer>> findPath(HashMap<Integer, ArrayList<Integer>> edges, LinkedList<LinkedList<Integer>> paths, LinkedList<Integer> path, int lastVertex, int currentVertex) {
 		ArrayList<Integer> edge = edges.get(currentVertex);
 		int num = 0;
 		
 		if (edge != null) {
 			 num = edge.size();
-		} else if (num == 0 || edge == null) {
-			paths.add(path);
 		}
 		
 		for (int i = 0; i < num; i++) {
 			int vertex = edge.get(i);
-			ArrayList<Integer> newPath = (ArrayList<Integer>) path.clone();
+			if (path.contains(vertex)) {
+				continue;
+			}
+			LinkedList<Integer> newPath = (LinkedList<Integer>) path.clone();
 			newPath.add(vertex);
 			if (vertex != lastVertex) {
 				findPath(edges, paths, newPath, lastVertex, vertex);
