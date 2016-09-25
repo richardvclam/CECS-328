@@ -12,7 +12,7 @@ public class Hotlines {
 	
 	public static void main(String[] args) throws FileNotFoundException {
 		long startTime = System.currentTimeMillis();
-		File file = new File("src/assignments/hotlines/edges.txt");
+		File file = new File("src/assignments/hotlines/edges_example.txt");
 		Scanner in = new Scanner(file);
 		
 		int N;
@@ -40,29 +40,35 @@ public class Hotlines {
 		
 		paths = findPath(edges, paths, path, N, 0);
 		
-		int largestPathNum = -1;
-		int largestSize = -1;
+		PrintWriter writer = new PrintWriter("src/assignments/hotlines/paths.txt");
+		
+		System.out.println("Paths: " + paths);
+		System.out.println("Number of possible paths: " + paths.size());
+		
+		ArrayList<ArrayList<Integer>> combinations = new ArrayList<ArrayList<Integer>>();
+		
+		ArrayList<Integer> longestPaths = new ArrayList<Integer>();
 		
 		for (int i = 0; i < paths.size(); i++) {
-			if (paths.get(i).size() > largestSize) {
-				largestSize = paths.get(i).size();
-				largestPathNum = i;
+			ArrayList<Integer> possibleCombination = new ArrayList<Integer>();
+			if (possibleCombination.isEmpty()) {
+				possibleCombination.add(i);
+			}
+			for (int j = 0; j < paths.size(); j++) {
+				LinkedList<Integer> p = paths.get(j);
 			}
 		}
 		
-		PrintWriter writer = new PrintWriter("src/assignments/hotlines/paths.txt");
-		
-		//System.out.println("Paths: " + paths);
-		System.out.println("Number of possible paths: " + paths.size());
-		
 		try {
-			System.out.println("Longest path: " + paths.get(largestPathNum));
-			
-			for (int i = 0; i < paths.get(largestPathNum).size(); i++) {
-				if (i != 0) {
-					writer.print(",");
+			System.out.println("Longest path: ");
+			for (int i = 0; i < longestPaths.size(); i++) {
+				for (int j = 0; j < paths.get(longestPaths.get(i)).size(); j++) {
+					if (j != 0) {
+						writer.print(",");
+					}
+					writer.print(paths.get(longestPaths.get(i)).get(j));
 				}
-				writer.print(paths.get(largestPathNum).get(i));
+				writer.println();
 			}
 		} catch (ArrayIndexOutOfBoundsException e) {
 			System.out.println("There aren't any paths.");
