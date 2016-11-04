@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class Mining {
@@ -113,17 +112,18 @@ public class Mining {
 		}
 		*/
 		
-		int prof = -10000;	
+		
 		//for (int i = pit.size() - 1; i > 0; i--) {
 		for (int i = 0; i < pit.size(); i++) {
-			
+			int prof = -10000;	
 			for (int j = 0; j < pit.get(i).size(); j++) {
+			//for (int j = pit.get(i).size() - 1; j > 0; j--) {
 				boolean[][] marked = copy(bestMarked);
 				if (getPitValue(i, j, pit) > 0) {
 					mine(i, j, pit, parents, marked);
 					int newProf = getTotalProfit(marked, pit);
 					if (newProf > prof) {
-						System.out.println("Old Profit: " + prof + " New Profit: " + newProf);
+						System.out.println(i + " " + j + " Value: " + getPitValue(i,j,pit) + " Old Profit: " + prof + " New Profit: " + newProf);
 						prof = newProf;
 						bestMarked = marked;
 					}
@@ -131,7 +131,27 @@ public class Mining {
 			}
 		}
 		
-		System.out.println("Total profit: " + getTotalProfit(bestMarked, pit));
+		profit = getTotalProfit(bestMarked, pit);
+		/*
+		// Cleanup
+		for (int i = 0; i < bestMarked.length; i++) {
+			for (int j = 0; j < bestMarked[i].length; j++) {
+				if (bestMarked[i][j] == true) {
+					if (getPitValue(i,j,pit) > 0) {
+						boolean[][] marked = copy(bestMarked);
+						marked[i][j] = false;
+						int newProf = getTotalProfit(marked, pit);
+						System.out.println(i + "" + j + " Profit: " + newProf);
+						if (profit == newProf) {
+							bestMarked = marked;
+						}
+					}
+				}
+			}
+		}
+		*/
+		
+		System.out.println("Total profit: " + profit);
 		
 		PrintWriter writer = new PrintWriter("src/assignments/mining/blocks.txt");
 		for (int i = 0; i < bestMarked.length; i++) {
