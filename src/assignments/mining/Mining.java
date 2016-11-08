@@ -4,13 +4,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Mining {
 	
 	public static void main(String[] args) throws FileNotFoundException {
 		long startTime = System.currentTimeMillis();
-		File file = new File("src/assignments/mining/pit_example.txt");
+		File file = new File("src/assignments/mining/pit_sample.txt");
 		Scanner in = new Scanner(file);
 		ArrayList<ArrayList<int[]>> pit = new ArrayList<ArrayList<int[]>>(); 
 		int largestRow = 0;
@@ -68,90 +69,110 @@ public class Mining {
 			}
 			parents.add(parentRow);
 		}
-		
-		
-		
+
 		int profit = 0;
-		boolean[][] bestMarked = new boolean[pit.size()][largestRow];
-		int lastRow = pit.size() - 1;
-		int numLastCols = pit.get(pit.size() - 1).size();
-		/*
-		for (int k = 0; k < numLastCols; k++) {
-			boolean[][] marked = new boolean[pit.size()][largestRow];
-			int newProfit = getProfit(pit.size() - 1, k, pit, parents, marked);
-			System.out.println("profit: " + newProfit);
-			if (newProfit > profit) {
-				profit = newProfit;
-				bestMarked = marked;
-				System.out.println("New profit: " + profit);
-				//System.out.println("There is a better one");
-			}
-			System.out.println(k);
-			boolean[][] newMarked = copy(marked);
-			for (int i = k + 1; i < numLastCols; i++) {
-				newProfit = getProfit(pit.size() - 1, i, pit, parents, newMarked);
-				if (newProfit > profit) {
-					profit = newProfit;
-					bestMarked = newMarked;
-					System.out.println("New profit: " + profit);
-					//System.out.println("There is a better one");
-				}
-				boolean[][] newMarkedd = copy(newMarked);
-				System.out.println(k+""+i);
-				for (int j = i + 1; j < numLastCols; j++) {
-					 newProfit = getProfit(pit.size() - 1, j, pit, parents, newMarkedd);
-					if (newProfit > profit) {
-						profit = newProfit;
-						bestMarked = newMarkedd;
-						System.out.println("New profit: " + profit);
-						//System.out.println("There is a better one");
-					}
-					System.out.println(k+""+i+""+j);
+		boolean[][] bestMarked = new boolean[pit.size()][largestRow - 1];
+		
+		// Real method
+		ArrayList<int[]> positives = new ArrayList<int[]>();
+		for (int i = 0; i < pit.size(); i++) {
+			for (int j = 0; j < pit.get(i).size(); j++) {
+				if (getPitValue(i, j, pit) > 0) {
+					int[] pair = {i,j};
+					positives.add(pair);
 				}
 			}
 		}
-		*/
+		
+		int[][] flow = new int[pit.size()][largestRow - 1];
+		for (int[] pair : positives) {
+			System.out.println(pair[0] + "," + pair[1]);
+			flow[pair[0]][pair[1]] = flow(pair[0], pair[1], pit, parents, flow, getPitValue(pair[0],pair[1], pit));
+		}
+		
+		for (int i = 0; i < flow.length; i++) {
+			for (int j = 0; j < flow[i].length; j++) {
+				System.out.print(flow[i][j] + " ");
+			}
+			System.out.println();
+		}
+		System.out.println();
+		
+		for (int[] pair : positives) {
+			if (flow[pair[0]][pair[1]] <= getPitValue(pair[0], pair[1], pit)) {
+				mine(pair[0], pair[1], pit, parents, bestMarked);
+			}
+		}
+		
+		/*
+		int prof = -10000;
+		for (int k = 0; k < positives.size(); k++) {
+			boolean[][] marked = new boolean[pit.size()][largestRow];
+			int[] pair = positives.get(k);
+			mine(pair[0], pair[1], pit, parents, marked);
+			//System.out.println("profit: " + prof);
+			int newProf = getTotalProfit(marked, pit);
+			if (newProf > prof) {
+				//System.out.println(i + " " + j + " Value: " + getPitValue(i,j,pit) + " Old Profit: " + prof + " New Profit: " + newProf + " Mined: " + mine);
+				prof = newProf;
+				bestMarked = copy(marked);
+			}
+			System.out.println(k);
+			
+			for (int i = k + 1; i < positives.size(); i++) {
+				boolean[][] newMarked = copy(marked);
+				pair = positives.get(i);
+				mine(pair[0], pair[1], pit, parents, newMarked);
+				newProf = getTotalProfit(newMarked, pit);
+				if (newProf > prof) {
+					//System.out.println(i + " " + j + " Value: " + getPitValue(i,j,pit) + " Old Profit: " + prof + " New Profit: " + newProf + " Mined: " + mine);
+					prof = newProf;
+					bestMarked = copy(newMarked);
+				}
+				
+				//System.out.println(k+" "+i);
+				
+				for (int j = i + 1; j < positives.size(); j++) {
+					boolean[][] newMarkedd = copy(newMarked);
+					pair = positives.get(j);
+					mine(pair[0], pair[1], pit, parents, newMarkedd);
+					newProf = getTotalProfit(newMarkedd, pit);
+					if (newProf > prof) {
+						//System.out.println(i + " " + j + " Value: " + getPitValue(i,j,pit) + " Old Profit: " + prof + " New Profit: " + newProf + " Mined: " + mine);
+						prof = newProf;
+						bestMarked = copy(newMarkedd);
+					}
+					//System.out.println(k+" "+i+" "+j);
+				}
+			}
+		}
+		
 		
 		
 		//for (int i = pit.size() - 1; i > 0; i--) {
 		for (int i = 0; i < pit.size(); i++) {
-			int prof = -10000;	
+			prof = -10000;	
 			for (int j = 0; j < pit.get(i).size(); j++) {
 			//for (int j = pit.get(i).size() - 1; j > 0; j--) {
 				boolean[][] marked = copy(bestMarked);
+				//System.out.println(getPitValue(i,j,pit));
 				if (getPitValue(i, j, pit) > 0) {
-					mine(i, j, pit, parents, marked);
+					int mine = mine(i, j, pit, parents, marked);
 					int newProf = getTotalProfit(marked, pit);
 					if (newProf > prof) {
-						System.out.println(i + " " + j + " Value: " + getPitValue(i,j,pit) + " Old Profit: " + prof + " New Profit: " + newProf);
+						//System.out.println(i + " " + j + " Value: " + getPitValue(i,j,pit) + " Old Profit: " + prof + " New Profit: " + newProf + " Mined: " + mine);
 						prof = newProf;
-						bestMarked = marked;
+						secondMethod = copy(marked);
 					}
 				}
 			}
-		}
-		
-		profit = getTotalProfit(bestMarked, pit);
-		/*
-		// Cleanup
-		for (int i = 0; i < bestMarked.length; i++) {
-			for (int j = 0; j < bestMarked[i].length; j++) {
-				if (bestMarked[i][j] == true) {
-					if (getPitValue(i,j,pit) > 0) {
-						boolean[][] marked = copy(bestMarked);
-						marked[i][j] = false;
-						int newProf = getTotalProfit(marked, pit);
-						System.out.println(i + "" + j + " Profit: " + newProf);
-						if (profit == newProf) {
-							bestMarked = marked;
-						}
-					}
-				}
-			}
+			System.out.println();
 		}
 		*/
 		
-		System.out.println("Total profit: " + profit);
+		int profitOne = getTotalProfit(bestMarked, pit);
+		
+		System.out.println("Total Profit: " + profitOne);
 		
 		PrintWriter writer = new PrintWriter("src/assignments/mining/blocks.txt");
 		for (int i = 0; i < bestMarked.length; i++) {
@@ -174,6 +195,7 @@ public class Mining {
 		}
 		
 		writer.close();
+		
 		in.close();
 		
 		long now = System.currentTimeMillis() - startTime;
@@ -222,6 +244,42 @@ public class Mining {
 		
 		//System.out.println("Total Profit: " + profit);
 		return profit;
+	}
+	
+	public static int flow(int row, int col, ArrayList<ArrayList<int[]>> pit, ArrayList<ArrayList<ArrayList<Integer>>> parents, int[][] flow, int capacity) {
+		if (flow[row][col] == Math.abs(getPitValue(row, col, pit)) || (getPitValue(row, col, pit) > 0 && row == 0)) {
+			return 0;
+		} else if (row == 0) {
+			return capacity;
+		}
+
+		ArrayList<Integer> p = parents.get(row - 1).get(col);
+		int currentFlow = 0;
+		for (int i = 0; i < p.size(); i++) {
+			int parentRow = row - 1;
+			int parentColumn = p.get(i);
+			int parentCapacity = getPitValue(parentRow, parentColumn, pit);
+			
+			if (parentCapacity > 0) {
+				continue;
+			}
+			
+			if (flow[parentRow][parentColumn] < Math.abs(parentCapacity) || currentFlow < capacity) {
+				int parentFlow = flow(parentRow, parentColumn, pit, parents, flow, Math.abs(parentCapacity));
+				if (capacity <= parentFlow + currentFlow || capacity <= Math.abs(parentCapacity)) {
+					flow[parentRow][parentColumn] = capacity;
+					return capacity;
+				} /*else if (parentFlow == 0) {
+					flow[parentRow][parentColumn] += Math.abs(parentCapacity);
+					currentFlow += Math.abs(parentCapacity);
+				} */else {
+					flow[parentRow][parentColumn] += parentFlow;
+					currentFlow += parentFlow;
+				}
+			}
+		}
+		
+		return currentFlow;
 	}
 	
 	public static int getTotalProfit(boolean[][] mined, ArrayList<ArrayList<int[]>> pit) {
