@@ -100,9 +100,9 @@ public class Mining {
 		
 		
 		for (int[] pair : positives) {
-			//if (flow[pair[0]][pair[1]] < getPitValue(pair[0], pair[1], pit)) {
-				mine(pair[0], pair[1], pit, parents, bestMarked);
-			//}
+			if (markPit(pair[0], pair[1], pit, parents, bestMarked, flow)) {
+				bestMarked[pair[0]][pair[1]] = true;
+			}
 		}
 		
 
@@ -232,14 +232,24 @@ public class Mining {
 		int value = getPitValue(row, col, pit);
 		if ((value <= 0) && (Math.abs(value) == flow[row][col])) {
 			marked[row][col] = true;
+		} else if ((value <= 0) && (Math.abs(value) != flow[row][col])) {
+			return false;
+		}
+		if (row == 0) {
+			if (getPitValue(row, col, pit) > 0) {
+				marked[row][col] = true;
+			}
+			return true;
 		}
 		ArrayList<Integer> p = parents.get(row - 1).get(col);
 		for (int i = 0; i < p.size(); i++) {
-			markPit(row - 1, p.get(i), pit, parents, marked, flow);
+			if (!markPit(row - 1, p.get(i), pit, parents, marked, flow)) {
+				return false;
+			}
 			//System.out.println("Parent Profit: " + profit);
 		}
 		
-		return false;
+		return true;
 	}
 	
 	public static int mine(int row, int col, ArrayList<ArrayList<int[]>> pit, ArrayList<ArrayList<ArrayList<Integer>>> parents, boolean[][] marked) {
