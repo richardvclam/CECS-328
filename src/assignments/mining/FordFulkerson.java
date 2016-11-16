@@ -12,43 +12,85 @@ public class FordFulkerson {
 			                {0, 0, 0, 7, 0, 4},
 			                {0, 0, 0, 0, 0, 0}
               };
+		int[][] graph2 = { 	{0, 10, 10, 0, 0, 0},
+			                {0, 0, 2, 4, 8, 0},
+			                {0, 0, 0, 0, 9, 0},
+			                {0, 0, 0, 0, 0, 10},
+			                {0, 0, 0, 6, 0, 10},
+			                {0, 0, 0, 0, 0, 0}
+				};
 		
-		int[][] residualGraph = new int[graph.length][graph[0].length];
-		for (int i = 0; i < graph.length; i++) {
-			for (int j = 0; j < graph.length; j++) {
-				residualGraph[i][j] = graph[i][j];
-			}
-		}
+		int inf = Integer.MAX_VALUE;
+		int[][] graph3 = { 	{0, 20, 9, 19, 0, 0, 0, 0, 0, 0, 0, 0},
+			                {0, 0, 0, 0, inf, inf, 0, 0, 0, 0, 0, 0},
+			                {0, 0, 0, 0, 0, inf, 0, 0, 0, 0, 0, 0},
+			                {0, 0, 0, 0, 0, inf, inf, inf, 0, 0, 0, 0},
+			                {0, 0, 0, 0, 0, 0, 0, 0, inf, inf, 0, 7},
+			                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14},
+			                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, inf, 12},
+			                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, inf, 3},
+			                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7},
+			                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4},
+			                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+			                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+		};
+		
+		int[][] graph4 = {  {0, 1000, 1000, 0},
+							{0, 0, 1, 1000},
+							{0, 0, 0, 1000},
+							{0, 0, 0, 0}
+				
+		};
+
 		int maxFlow = 0;
-		for (int i = 0; i < 5; i++) {
-			maxFlow += maxFlow(graph, residualGraph, new ArrayList<Integer>(), 0, Integer.MAX_VALUE, maxFlow);
-			//System.out.println("Max flow: " + maxFlow);
-		}
+		int prevFlow = 0;
+		do {
+			if (prevFlow != maxFlow) {
+				prevFlow = maxFlow;
+			}
+			maxFlow += maxFlow(graph2, new ArrayList<Integer>(), 0, Integer.MAX_VALUE, 0);
+			System.out.println("Max flow: " + maxFlow);
+			
+		} while (prevFlow != maxFlow);
+		
+		ArrayList<Integer> cuts = minCut(graph2, new ArrayList<Integer>(), 0);
+		System.out.println(cuts);
 	}
 	
-	public static int maxFlow(int[][] capacityGraph, int[][] residualGraph, ArrayList<Integer> stack, int row, int capacity, int maxFlow) {
+	public static ArrayList<Integer> minCut(int[][] capacityGraph, ArrayList<Integer> stack, int row) {
+		stack.add(row);
+		for (int i = 1; i < capacityGraph[row].length; i++) {
+			if (i == row || stack.contains(i)) {
+				continue;
+			}
+			if (capacityGraph[row][i] > 0) {
+				minCut(capacityGraph, stack, i);
+			}
+		}
+		return stack;
+	}
+	
+	public static int maxFlow(int[][] capacityGraph, ArrayList<Integer> stack, int row, int capacity, int maxFlow) {
 		if (row == capacityGraph.length - 1) {
 			System.out.println(capacity);
 			return capacity;
 		}
-		
-		for (int i = 0; i < capacityGraph[row].length; i++) {
-			if (i == row || stack.contains(i) || i == 0) {
+		stack.add(row);
+		for (int i = 1; i < capacityGraph[row].length; i++) {
+			if (i == row || stack.contains(i)) {
 				continue;
 			}
-			if (capacityGraph[row][i] > 0 /*&& residualGraph[row][i] < capacityGraph[row][i]*/) {
-				stack.add(i);
-				int flow = maxFlow(capacityGraph, residualGraph, stack, i, capacityGraph[row][i] < capacity ? capacityGraph[row][i] : capacity, maxFlow);
-				stack.remove(stack.size() - 1);
-				//residualGraph[row][i] -= flow;
-				//residualGraph[i][row] += flow;
-				capacityGraph[row][i] -= flow;
-				capacityGraph[i][row] += flow;
-				maxFlow = flow;
-				break;
+			if (capacityGraph[row][i] > 0) {
+				int flow = maxFlow(capacityGraph, stack, i, capacityGraph[row][i] < capacity ? capacityGraph[row][i] : capacity, maxFlow);
+				if (flow > 0) {
+					capacityGraph[row][i] -= flow;
+					capacityGraph[i][row] += flow;
+					maxFlow = flow;
+					break;
+				}
 			}
 		}
-		
+		stack.remove(stack.size() - 1);
 		return maxFlow;
 	}
 
