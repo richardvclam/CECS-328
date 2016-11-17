@@ -1,6 +1,7 @@
 package assignments.mining;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Queue;
 
 public class FordFulkerson {
@@ -49,7 +50,8 @@ public class FordFulkerson {
 			if (prevFlow != maxFlow) {
 				prevFlow = maxFlow;
 			}
-			maxFlow += maxFlow(graph2, new ArrayList<Integer>(), 0, Integer.MAX_VALUE, 0);
+			//maxFlow += maxFlow(graph2, new ArrayList<Integer>(), 0, Integer.MAX_VALUE, 0);
+			maxFlow += bfsMaxFlow(graph3);
 			System.out.println("Max flow: " + maxFlow);
 			
 		} while (prevFlow != maxFlow);
@@ -95,26 +97,36 @@ public class FordFulkerson {
 		return maxFlow;
 	}
 	
-	public static int bfsMaxFlow(int[][] capacityGraph, Queue<Integer> q, int source, int sink, int capacity, int maxFlow, boolean[][] visited) {
-		if (source == capacityGraph.length - 1) {
-			System.out.println(capacity);
-			return capacity;
-		}
-		
-		q.add(source);
-		
+	public static int bfsMaxFlow(int[][] capacityGraph) {
+		boolean[] visited = new boolean[capacityGraph.length];
+		int[] pathTo = new int[capacityGraph.length];
+		int capacity = Integer.MAX_VALUE;
+		Queue<Integer> q = new LinkedList<Integer>();
+		q.add(0);
+	
 		while (!q.isEmpty()) {
 			int vertex = q.remove();
-			for (int i = 0; i < sink; i++) {
-				if (!visited[vertex][i]) {
-					visited[vertex][i] = true;
+			for (int i = 0; i < capacityGraph.length; i++) {
+				if (!visited[i] && capacityGraph[vertex][i] > 0) {
+					visited[i] = true;
+					pathTo[i] = vertex;
 					q.add(i);
 				}
 			}
 		}
 		
+		for (int i = capacityGraph.length - 1; i != 0; i = pathTo[i]) {
+			if (capacityGraph[pathTo[i]][i] < capacity) {
+				capacity = capacityGraph[pathTo[i]][i];
+			}
+		}
+
+		for (int i = capacityGraph.length - 1; i != 0; i = pathTo[i]) {
+			capacityGraph[pathTo[i]][i] -= capacity;
+			capacityGraph[i][pathTo[i]] += capacity;
+		}
 		
-		return maxFlow;
+		return capacity;
 	}
 
 }
