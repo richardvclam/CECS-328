@@ -1,6 +1,7 @@
 package assignments.mining;
 
 import java.util.ArrayList;
+import java.util.Queue;
 
 public class FordFulkerson {
 	
@@ -91,6 +92,28 @@ public class FordFulkerson {
 			}
 		}
 		stack.remove(stack.size() - 1);
+		return maxFlow;
+	}
+	
+	public static int bfsMaxFlow(int[][] capacityGraph, Queue<Integer> q, int source, int sink, int capacity, int maxFlow, boolean[][] visited) {
+		if (source == capacityGraph.length - 1) {
+			System.out.println(capacity);
+			return capacity;
+		}
+		
+		q.add(source);
+		
+		while (!q.isEmpty()) {
+			int vertex = q.remove();
+			for (int i = 0; i < sink; i++) {
+				if (!visited[vertex][i]) {
+					visited[vertex][i] = true;
+					q.add(i);
+				}
+			}
+		}
+		
+		
 		return maxFlow;
 	}
 
