@@ -2,6 +2,7 @@ package assignments.mixtures;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Mixtures {
@@ -16,10 +17,17 @@ public class Mixtures {
 			e.printStackTrace();
 		}
 		
-		String target = in.nextLine();
+		String[] targetString = in.nextLine().split(",");
+		int[] target = new int[targetString.length];
+		ArrayList<int[]> solutions = new ArrayList<int[]>();
 		
 		while (in.hasNextLine()) {
-			in.nextLine();
+			String[] solString = in.nextLine().split(":");
+			int[] solution = new int[solString.length];
+			for (int i = 0; i < solString.length; i++) {
+				solution[i] = Integer.parseInt(solString[i]);
+			}
+			solutions.add(solution);
 		}
 		
 		long now = System.currentTimeMillis() - startTime;
